@@ -150,7 +150,7 @@ export function HeroReport({ report, onNewAudit, onLogout }: HeroReportProps) {
               METHODOLOGY
             </div>
             <div className="mt-1.5 text-slate-200">
-              9-Signal Machine-Readability Framework
+              10-Signal Machine-Readability Framework
             </div>
           </div>
           <div>
