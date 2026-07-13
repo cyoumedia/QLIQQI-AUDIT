@@ -1,0 +1,10 @@
+- [x] Create `lib/auth.ts` helper with Web Crypto HMAC-SHA256 signature logic
+- [x] Create `middleware.ts` to protect `/admin/:path*`
+- [x] Create API Route Handler `/api/login/route.ts`
+- [x] Create API Route Handler `/api/logout/route.ts`
+- [x] Refactor `/` page (`app/page.tsx`) to redirect to `/admin`
+- [x] Create Protected Admin page (`app/admin/page.tsx`) with audit form & logout trigger
+- [x] Create Login page (`app/login/page.tsx`) styled like the CYouMedia landing page
+- [x] Verification
+    - [x] Run build check to confirm no TypeScript or Next.js compile errors
+    - [x] Add `.env.local` variables mapping

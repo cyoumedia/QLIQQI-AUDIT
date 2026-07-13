@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #ffffff;
+  --panel: #ffffff;
+  --panel-2: #f8fafc;
+  --line: #e2e8f0;
+  --ink: #07111f;
+  --muted: #64748b;
+  --faint: #94a3b8;
+  --accent: #113255;
+  --accent-hover: #1d538c;
+  --good: #10b981;
+  --caution: #d97706;
+  --fault: #dc2626;
+  --unknown: #64748b;
+  --shadow: 0 1px 0 rgba(7, 17, 31, 0.04), 0 18px 40px -24px rgba(7, 17, 31, 0.12);
+  --ai-panel-gap: 1rem;
+  --ai-panel-gap-lg: calc(var(--ai-panel-gap) * 3);
+  --bg-cream: #f4f1ec;
+  --navy-banner-from: #0a1c30;
+  --navy-banner-to: #0f2840;
+}
+
+@media (min-width: 1024px) {
+  .ai-panel-grid {
+    display: grid;
+    grid-template-columns:
+      minmax(0, 1fr)
+      var(--ai-panel-gap-lg)
+      minmax(0, 1fr)
+      var(--ai-panel-gap)
+      minmax(0, 1fr)
+      var(--ai-panel-gap)
+      minmax(0, 1fr);
+    gap: 0;
+  }
+}
+
+@theme inline {
+  --color-qliqqi-navy: #07111f;
+  --color-qliqqi-teal: #113255;
+  --color-qliqqi-bright: #1d538c;
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-saira);
+  --font-mono: var(--font-jetbrains);
+  --font-serif: Georgia, Cambria, "Times New Roman", Times, serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background:
+    radial-gradient(900px 500px at 80% -10%, rgba(17, 50, 85, 0.05), transparent 60%),
+    radial-gradient(700px 400px at -10% 10%, rgba(29, 83, 140, 0.04), transparent 55%),
+    var(--bg);
+  color: var(--ink);
+  font-family: var(--font-inter), system-ui, sans-serif;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+.eyebrow {
+  font-family: var(--font-saira), sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: white;
+  }
+  .card,
+  .priority,
+  section.ai,
+  header.top,
+  .note {
+    box-shadow: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gauge-fill,
+  .meter-fill {
+    transition: none !important;
+  }
+}
