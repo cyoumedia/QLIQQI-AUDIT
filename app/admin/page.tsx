@@ -70,19 +70,12 @@ export default function AdminPage() {
     try {
       await streamAudit(auditUrl, abortRef.current.signal, {
         onEvent: (event) => {
-  console.log("SSE EVENT:", event);
-
-  if (event.type === "warning") {
-    toast.warning(event.message);
-    return;
-  }
-
-  setDiag((d) => {
-    const next = parseProgressEvent(event, d);
-    console.log("NEW DIAG:", next);
-    return next;
-  });
-},  
+          if (event.type === "warning") {
+            toast.warning(event.message);
+            return;
+          }
+          setDiag((d) => parseProgressEvent(event, d));
+        },
         onReport: (r) => {
           const auditDurationMs =
             auditStartedRef.current != null

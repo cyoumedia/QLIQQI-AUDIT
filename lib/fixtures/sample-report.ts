@@ -207,6 +207,14 @@ export const sampleReport: AuditReport = {
       finding: "sitemap.xml presence couldn't be confirmed for this host.",
       fix: "Generate XML sitemap, reference in robots.txt, submit in Search Console.",
     },
+    {
+      id: "llmsTxt",
+      name: "llms.txt file",
+      score: 0,
+      chip: "unverified",
+      finding: "llms.txt presence couldn't be confirmed for this host.",
+      fix: "Create and publish an llms.txt file at the root to guide LLM search agents.",
+    },
   ],
   lighthouse: {
     sampleSize: 4,

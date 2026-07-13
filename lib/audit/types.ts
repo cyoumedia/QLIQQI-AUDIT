@@ -99,6 +99,7 @@ export interface AuditReport {
     };
     seedDiagnostics?: LighthouseSeedDiagnostics;
     opportunities: Record<string, { title: string; description: string }[]>;
+    agenticBrowsing?: AgenticBrowsingReport;
   };
   rankedRecommendations: {
     rank: number;
@@ -285,6 +286,17 @@ export interface PSIResult {
   sampledUrls: string[];
   successCount: number;
   failureCount: number;
+  agenticBrowsing?: AgenticBrowsingReport;
+}
+
+export interface AgenticBrowsingReport {
+  available: boolean;
+  passed: number;
+  total: number;
+  score?: number;
+  title: string;
+  description?: string;
+  audits: LighthouseAuditItem[];
 }
 
 export type ProgressEmitter = (event: AuditProgressEvent) => void;

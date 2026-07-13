@@ -13,6 +13,7 @@ const ELEMENT_NAMES: Record<string, string> = {
   mobileViewport: "Mobile viewport",
   robotsTxt: "Robots.txt — AI allow-list",
   xmlSitemap: "XML sitemap",
+  llmsTxt: "llms.txt file",
 };
 
 function partialCrawlSuffix(eligibleCount: number, totalCount: number): string {
@@ -303,6 +304,42 @@ function scoreSitemap(crawl: CrawlResult, eligibleCount: number) {
   };
 }
 
+function scoreLlmsTxt(crawl: CrawlResult, eligibleCount: number) {
+  if (!crawl.llmsTxt.present) {
+    if (eligibleCount === 0) {
+      return {
+        score: 0,
+        chip: "unverified" as const,
+        finding: "llms.txt presence could not be confirmed — crawl could not verify site reachability.",
+        fix: "Verify the site URL is reachable, then publish a descriptive llms.txt file.",
+      };
+    }
+    return {
+      score: 0,
+      chip: "verified" as const,
+      finding: "llms.txt not found at the root of the domain.",
+      fix: "Create and publish an llms.txt file at the root to guide LLM search agents.",
+    };
+  }
+
+  const length = crawl.llmsTxt.content.trim().length;
+  if (length < 30) {
+    return {
+      score: 50,
+      chip: "verified" as const,
+      finding: "llms.txt is present but lacks sufficient content or site details.",
+      fix: "Expand llms.txt with primary context, headings, and links to documentation.",
+    };
+  }
+
+  return {
+    score: 100,
+    chip: "verified" as const,
+    finding: `llms.txt found at domain root (${length} characters).`,
+    fix: "None needed — keep updated as site pages change.",
+  };
+}
+
 export function scoreTechnicalElements(crawl: CrawlResult): TechnicalCard[] {
   const eligible = getEligiblePages(crawl.pages);
   const totalCount = crawl.pages.length;
@@ -319,6 +356,7 @@ export function scoreTechnicalElements(crawl: CrawlResult): TechnicalCard[] {
     { id: "mobileViewport" as const, ...scoreViewport(pages, eligibleCount, totalCount) },
     { id: "robotsTxt" as const, ...scoreRobots(crawl, eligibleCount) },
     { id: "xmlSitemap" as const, ...scoreSitemap(crawl, eligibleCount) },
+    { id: "llmsTxt" as const, ...scoreLlmsTxt(crawl, eligibleCount) },
   ];
 
   return scorers.map((s) => ({

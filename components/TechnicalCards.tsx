@@ -24,6 +24,8 @@ const WHY_IT_MATTERS_MAP: Record<string, string> = {
     "Explicit agent rules allow or block crawlers like GPTBot, ClaudeBot, PerplexityBot, and CCBot.",
   xmlSitemap:
     "A clean XML sitemap helps crawlers discover and prioritize all indexable content.",
+  llmsTxt:
+    "A dedicated llms.txt file provides clean, structured summaries specifically formatted for LLM crawlers.",
 };
 
 export function TechnicalCards({ report }: { report: AuditReport }) {
@@ -35,7 +37,7 @@ export function TechnicalCards({ report }: { report: AuditReport }) {
           THE FULL DIAGNOSTIC
         </span>
         <h2 className="font-serif text-3xl font-bold text-[#07111F] leading-tight">
-          9 core elements
+          10 core elements
         </h2>
         <p className="mt-2 text-sm text-slate-500 font-light max-w-2xl leading-relaxed">
           Every signal scored 0–100, with the exact page evidence, the fix, and

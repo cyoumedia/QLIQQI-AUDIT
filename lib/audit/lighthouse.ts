@@ -8,6 +8,7 @@ import type {
   PageExtract,
   PSIResult,
   ProgressEmitter,
+  AgenticBrowsingReport,
 } from "./types";
 
 const PSI_CATEGORIES = [
@@ -15,6 +16,7 @@ const PSI_CATEGORIES = [
   "accessibility",
   "best-practices",
   "seo",
+  "agentic-browsing",
 ] as const;
 
 const LH_CATEGORIES: LighthouseCategoryKey[] = [
@@ -154,6 +156,7 @@ interface PsiPageResult {
   seo: number;
   categoryAudits: Record<LighthouseCategoryKey, LighthouseAuditItem[]>;
   opportunities: Record<string, { title: string; description: string }[]>;
+  agenticBrowsing?: AgenticBrowsingReport;
 }
 
 async function parsePsiError(res: Response): Promise<string> {
@@ -216,7 +219,53 @@ async function runPsi(
     const categoryAudits = extractCategoryAudits(cats, audits, maxPerCategory);
     const opportunities = toOpportunities(categoryAudits);
 
-    return { ...scores, categoryAudits, opportunities };
+    // Parse Agentic Browsing if it exists
+    const agenticBrowsingCat = cats["agentic-browsing"];
+    let agenticBrowsing: AgenticBrowsingReport | undefined = undefined;
+
+    if (agenticBrowsingCat) {
+      const refs = agenticBrowsingCat.auditRefs ?? [];
+      let passed = 0;
+      let total = 0;
+      const catAudits: LighthouseAuditItem[] = [];
+
+      for (const ref of refs) {
+        const audit = audits[ref.id];
+        if (!audit?.title) continue;
+
+        const isNotApplicable = audit.scoreDisplayMode === "notApplicable";
+
+        if (!isNotApplicable) {
+          total++;
+          const isPass = audit.score != null && (audit.score === 1 || audit.score >= 0.9);
+          if (isPass) {
+            passed++;
+          }
+        }
+
+        if (isFailingAudit(audit)) {
+          catAudits.push({
+            id: ref.id,
+            title: audit.title,
+            description: stripHtml(audit.description ?? "").slice(0, 400),
+            displayValue: audit.displayValue,
+            score: auditScore100(audit),
+          });
+        }
+      }
+
+      agenticBrowsing = {
+        available: true,
+        passed,
+        total,
+        score: agenticBrowsingCat.score != null ? Math.round(agenticBrowsingCat.score * 100) : undefined,
+        title: agenticBrowsingCat.title ?? "Agentic Browsing",
+        description: stripHtml(agenticBrowsingCat.description ?? ""),
+        audits: catAudits.slice(0, maxPerCategory),
+      };
+    }
+
+    return { ...scores, categoryAudits, opportunities, agenticBrowsing };
   }
 
   throw new Error("PSI request failed after retries");
@@ -340,7 +389,7 @@ export async function runLighthouseAudit(
     };
   }
 
-  const avg = (key: keyof Omit<PsiPageResult, "opportunities" | "categoryAudits">) =>
+  const avg = (key: "performance" | "accessibility" | "bestPractices" | "seo") =>
     Math.round(results.reduce((s, r) => s + r[key], 0) / results.length);
 
   const psiSeoSiteAverage = avg("seo");
@@ -412,5 +461,6 @@ export async function runLighthouseAudit(
     sampledUrls: urls,
     successCount: results.length,
     failureCount,
+    agenticBrowsing: seedResult?.agenticBrowsing,
   };
 }

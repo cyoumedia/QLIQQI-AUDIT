@@ -5,6 +5,7 @@ import type {
   AuditReport,
   LighthouseAuditItem,
   LighthouseCategoryKey,
+  AgenticBrowsingReport,
 } from "@/lib/audit/types";
 import { LinkedText } from "./LinkedText";
 import { useReportExpand } from "./ReportExpandContext";
@@ -57,6 +58,8 @@ export function LighthousePanel({ report }: { report: AuditReport }) {
   const lh = report.lighthouse;
   const seed = lh.seedDiagnostics;
   const multiPage = lh.sampleSize > 1;
+  const ab: AgenticBrowsingReport | undefined = lh.agenticBrowsing;
+  const abExpanded = expanded["agenticBrowsing"] || false;
 
   useEffect(() => {
     if (allExpanded) {
@@ -64,6 +67,7 @@ export function LighthousePanel({ report }: { report: AuditReport }) {
         performance: true,
         accessibility: true,
         bestPractices: true,
+        agenticBrowsing: true,
       });
     } else {
       setExpanded({});
@@ -74,12 +78,20 @@ export function LighthousePanel({ report }: { report: AuditReport }) {
     setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
   }
 
+  function toggleAgenticBrowsing() {
+    setExpanded((prev) => ({ ...prev, agenticBrowsing: !prev.agenticBrowsing }));
+  }
+
   function seedScore(key: LighthouseCategoryKey): number | undefined {
     return seed?.scores[key];
   }
 
-  function diagnosticsFor(key: LighthouseCategoryKey): LighthouseAuditItem[] {
-    return seed?.audits[key] ?? [];
+  // Cast key to generic string to allow "agenticBrowsing" lookup or standard keys
+  function diagnosticsFor(key: string): LighthouseAuditItem[] {
+    if (key === "agenticBrowsing") {
+      return ab?.audits ?? [];
+    }
+    return seed?.audits[key as LighthouseCategoryKey] ?? [];
   }
 
   return (
@@ -100,7 +112,9 @@ export function LighthousePanel({ report }: { report: AuditReport }) {
           {seed ? (
             <>
               {" · diagnostics from seed "}
-              
+              <code className="rounded bg-slate-50 border border-slate-200/65 px-1.5 py-0.5 font-mono text-xs select-all text-slate-650">
+                {seedPath(seed.url)}
+              </code>
             </>
           ) : null}
         </p>
@@ -140,61 +154,142 @@ export function LighthousePanel({ report }: { report: AuditReport }) {
 
       {/* Performance Card with Gauges */}
       {lh.status !== "failed" && lh.status !== "skipped" && (
-        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 md:p-8 grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-0 sm:divide-y-0 sm:divide-x divide-slate-100 hover:shadow-md transition-shadow">
-          {CATEGORIES.map(({ key, label }) => {
-            const siteScore = lh.scores[key];
-            const seedOnly = seedScore(key);
-            const showSeedNote =
-              multiPage && seedOnly != null && seedOnly !== siteScore;
-            const color = scoreColor(siteScore);
+        <>
+          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 md:p-8 grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-0 sm:divide-y-0 sm:divide-x divide-slate-100 hover:shadow-md transition-shadow">
+            {CATEGORIES.map(({ key, label }) => {
+              const siteScore = lh.scores[key];
+              const seedOnly = seedScore(key);
+              const showSeedNote =
+                multiPage && seedOnly != null && seedOnly !== siteScore;
+              const color = scoreColor(siteScore);
 
-            return (
-              <div
-                key={key}
-                className="flex flex-col items-center text-center p-3"
-              >
-                {/* Category label */}
-                <div className="text-[10px] tracking-widest text-slate-400 uppercase font-bold mb-1">
-                  {label}
-                </div>
-
-                {/* Seed score note */}
-                <div className="h-4 font-mono text-[9px] text-slate-400 font-medium mb-2.5">
-                  {showSeedNote ? `Seed: ${seedOnly}/100` : ""}
-                </div>
-
-                {/* Circular Gauge */}
-                <PremiumGauge score={siteScore} color={color} />
-
-                {/* Toggle details button */}
-                <button
-                  type="button"
-                  onClick={() => toggleCategory(key)}
-                  className="mt-5 text-xs text-[#1D538C] font-semibold flex items-center gap-1 cursor-pointer hover:underline"
+              return (
+                <div
+                  key={key}
+                  className="flex flex-col items-center text-center p-3"
                 >
-                  <span>Diagnostics</span>
-                  <span>{expanded[key] ? "Hide ↑" : "View →"}</span>
-                </button>
-
-                {/* Collapsible Diagnostics list */}
-                {expanded[key] && (
-                  <div className="mt-5 w-full text-left pt-4 border-t border-slate-100">
-                    <ul className="max-h-96 space-y-3.5 overflow-y-auto overscroll-y-contain pr-2 text-xs [scrollbar-gutter:stable] scrollbar-thin">
-                      {diagnosticsFor(key).map((audit) => (
-                        <AuditRow key={audit.id} audit={audit} />
-                      ))}
-                      {diagnosticsFor(key).length === 0 && (
-                        <li className="text-slate-400 font-light text-center py-2">
-                          No failing audits flagged.
-                        </li>
-                      )}
-                    </ul>
+                  {/* Category label */}
+                  <div className="text-[10px] tracking-widest text-slate-400 uppercase font-bold mb-1">
+                    {label}
                   </div>
+
+                  {/* Seed score note */}
+                  <div className="h-4 font-mono text-[9px] text-slate-400 font-medium mb-2.5">
+                    {showSeedNote ? `Seed: ${seedOnly}/100` : ""}
+                  </div>
+
+                  {/* Circular Gauge */}
+                  <PremiumGauge score={siteScore} color={color} />
+
+                  {/* Toggle details button */}
+                  <button
+                    type="button"
+                    onClick={() => toggleCategory(key)}
+                    className="mt-5 text-xs text-[#1D538C] font-semibold flex items-center gap-1 cursor-pointer hover:underline"
+                  >
+                    <span>Diagnostics</span>
+                    <span>{expanded[key] ? "Hide ↑" : "View →"}</span>
+                  </button>
+
+                  {/* Collapsible Diagnostics list */}
+                  {expanded[key] && (
+                    <div className="mt-5 w-full text-left pt-4 border-t border-slate-100">
+                      <ul className="max-h-96 space-y-3.5 overflow-y-auto overscroll-y-contain pr-2 text-xs [scrollbar-gutter:stable] scrollbar-thin">
+                        {diagnosticsFor(key).map((audit) => (
+                          <AuditRow key={audit.id} audit={audit} />
+                        ))}
+                        {diagnosticsFor(key).length === 0 && (
+                          <li className="text-slate-400 font-light text-center py-2">
+                            No failing audits flagged.
+                          </li>
+                        )}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Agentic Browsing Premium Card */}
+          <div className="mt-6 bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 md:p-8 hover:shadow-md transition-shadow">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="flex-1 space-y-2">
+                <div className="flex items-center gap-3">
+                  <span className="text-[10px] tracking-widest text-slate-400 uppercase font-bold">
+                    EXPERIMENTAL CAPABILITY
+                  </span>
+                </div>
+                <h3 className="font-serif text-xl font-bold text-[#07111F]">
+                  {ab?.title ?? "Agentic Browsing"}
+                </h3>
+                <p className="text-xs text-slate-500 font-light max-w-2xl leading-relaxed">
+                  {ab?.available && ab.description ? (
+                    <LinkedText text={ab.description} />
+                  ) : (
+                    "This Lighthouse version does not expose Agentic Browsing results."
+                  )}
+                </p>
+
+                {ab?.available && (
+                  <button
+                    type="button"
+                    onClick={toggleAgenticBrowsing}
+                    className="mt-3 text-xs text-[#1D538C] font-semibold flex items-center gap-1 cursor-pointer hover:underline"
+                  >
+                    
+                    <span>{abExpanded ? "↑ Hide" : " → View"}</span>
+                    <span> Diagnostics</span>
+                  </button>
                 )}
               </div>
-            );
-          })}
-        </div>
+
+              {/* Large pass ratio numeral / status on the right */}
+              <div className="flex flex-col items-center justify-center text-center p-4 bg-slate-50 border border-slate-100 rounded-2xl min-w-[140px] md:min-w-[160px] self-stretch md:self-auto">
+                {ab?.available ? (
+                  <>
+                    <span className={`font-display text-4xl md:text-5xl font-extrabold tracking-tight ${
+                      ab.passed === ab.total ? "text-emerald-500" : "text-amber-505 text-amber-500"
+                    }`}>
+                      {ab.passed}/{ab.total}
+                    </span>
+                    <span className="text-[9px] tracking-wider text-slate-400 font-bold uppercase mt-2">
+                      PASSED CHECKS
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="font-display text-2xl md:text-3xl font-bold text-slate-400 tracking-tight uppercase">
+                      N/A
+                    </span>
+                    <span className="text-[9px] tracking-wider text-slate-400 font-bold uppercase mt-2">
+                      UNAVAILABLE
+                    </span>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Collapsible Diagnostics list */}
+            {ab?.available && abExpanded && (
+              <div className="mt-6 pt-6 border-t border-slate-100">
+                <div className="text-[10px] tracking-widest text-slate-400 uppercase font-bold mb-3">
+                  Agentic Browsing Diagnostics
+                </div>
+                <ul className="max-h-96 space-y-3.5 overflow-y-auto overscroll-y-contain pr-2 text-xs [scrollbar-gutter:stable] scrollbar-thin">
+                  {diagnosticsFor("agenticBrowsing").map((audit) => (
+                    <AuditRow key={audit.id} audit={audit} />
+                  ))}
+                  {diagnosticsFor("agenticBrowsing").length === 0 && (
+                    <li className="text-slate-400 font-light text-center py-4 bg-slate-50 border border-slate-100/50 rounded-xl">
+                      All agentic readiness checks passed successfully. No failing audits flagged.
+                    </li>
+                  )}
+                </ul>
+              </div>
+            )}
+          </div>
+        </>
       )}
     </section>
   );

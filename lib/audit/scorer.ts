@@ -29,7 +29,8 @@ export type TechnicalElementId =
   | "textToCode"
   | "mobileViewport"
   | "robotsTxt"
-  | "xmlSitemap";
+  | "xmlSitemap"
+  | "llmsTxt";
 
 export type PanelMetricId = "seo" | "geo" | "aeo" | "structured";
 
@@ -91,7 +92,7 @@ export interface ScoredPanel {
 export interface ScoredAudit {
   technical: TechnicalElementScore[];
   panel: ScoredPanel;
-  /** Hero gauge — 9 technical + GEO + AEO + Structured (12 elements). SEO excluded. */
+  /** Hero gauge — 10 technical + GEO + AEO + Structured (13 elements). SEO excluded. */
   overall: number;
   verdict: string;
 }
@@ -279,8 +280,8 @@ export function applyTechnicalNudge(
 // ---------------------------------------------------------------------------
 
 /**
- * Hero overall gauge: simple average of 12 elements.
- * 9 technical + GEO + AEO + Structured Content.
+ * Hero overall gauge: simple average of 13 elements.
+ * 10 technical + GEO + AEO + Structured Content.
  * SEO panel score is intentionally excluded — see Overall Score Calc.md.
  */
 export function computeOverallScore(

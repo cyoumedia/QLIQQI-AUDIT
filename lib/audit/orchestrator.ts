@@ -584,6 +584,7 @@ async function runAuditInner(
       scores: psi.scores,
       seedDiagnostics: psi.seedDiagnostics,
       opportunities: psi.opportunities,
+      agenticBrowsing: psi.agenticBrowsing,
     },
     rankedRecommendations,
     perPageFindings: buildPerPageFindings(crawl.pages, technicalIssues),

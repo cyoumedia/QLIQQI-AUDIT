@@ -31,6 +31,10 @@ const RULE_FIXES: Record<string, { title: string; description: string }> = {
     title: "Publish XML sitemap",
     description: "Generate sitemap.xml, reference in robots.txt, submit in Search Console.",
   },
+  llmsTxt: {
+    title: "Publish llms.txt file",
+    description: "Provide a clean, structured llms.txt file at the root to summarize your site context for LLM agents.",
+  },
   metaTags: {
     title: "Complete meta tag coverage",
     description: "Ensure unique title, description, OG, and canonical on every page.",

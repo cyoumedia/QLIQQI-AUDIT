@@ -31,6 +31,7 @@ const STRONGEST_SUBLABEL_MAP: Record<string, string> = {
   mobileViewport: "responsive screen layouts",
   robotsTxt: "optimized crawler permissions",
   xmlSitemap: "comprehensive search discovery paths",
+  llmsTxt: "optimized machine-readable summaries",
 };
 
 export function HeroReport({ report, onNewAudit, onLogout }: HeroReportProps) {
